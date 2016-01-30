@@ -313,6 +313,7 @@ if __name__ == "__main__":
 
 	axis.invert_yaxis()
 	axis.set_aspect('equal')
-	plt.savefig('graph_averages.pdf', format='pdf')
+	for thisFormat in ["pdf", "svg"]:
+		plt.savefig('graph_averages.{}'.format(thisFormat), format=thisFormat)
 	plt.close()
 
