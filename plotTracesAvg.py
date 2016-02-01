@@ -15,7 +15,8 @@ import matplotlib
 from matplotlib import cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-matplotlib.style.use('ggplot')
+#matplotlib.style.use('ggplot')
+matplotlib.style.use('seaborn-white')
 
 origin = (245,606)
 originLow = (240,606)
@@ -53,8 +54,11 @@ def setGlobals(lang):
 		}
 		roundedVs = ["ұ", "ү", "о", "ө"]
 
-		order = ["ы", "ұ", "о", "а", "ә", "е", "ө", "ү", "і"]
-		replaces = ["ə", "ʊ", "uʊ", "ɑ", "æ", "iɘ", "yʉ", "ʉ", "ɘ"]
+		#order = ["ы", "ұ", "о", "а", "ә", "е", "ө", "ү", "і"]
+		#replaces = ["ə", "ʊ", "uʊ", "ɑ", "æ", "iɘ", "yʉ", "ʉ", "ɘ"]
+		order = ["ұ", "ы", "о", "а", "ә", "і", "ү", "е", "ө"]
+		replaces = ["ʊ", "ə", "uʊ", "ɑ", "æ", "ɘ", "ʉ", "iɘ", "yʉ"]
+
 
 	elif lang=="tur":
 		vowColors = {
@@ -68,28 +72,49 @@ def setGlobals(lang):
 			"ü": blue,
 			"i": blue
 		}
+		roundedVs = ["u", "ü", "o", "ö"]
 
-		order = ["ı", "u", "o", "a", "â", "e", "ö", "ü", "i"]
-		replaces = ["ɯ", "u", "o", "a", "ʲa", "e", "œ", "y", "i"]
+		#order = ["ı", "u", "o", "a", "â", "e", "ö", "ü", "i"]
+		#replaces = ["ɯ", "u", "o", "a", "ʲa", "e", "œ", "y", "i"]
+		order = ["u", "ı", "o", "a", "â", "i", "ü", "e", "ö"]
+		replaces = ["u", "ɯ", "o", "a", "ʲa", "i", "y", "e", "œ"]
+
+
+	elif lang=="kir":
+		vowColors = {
+			"ы": darkred,
+			"у": darkred,
+			"о": lightred,
+			"а": lightred,
+			"е": cyan,
+			"ө": cyan,
+			"ү": blue,
+			"и": blue
+		}
+		roundedVs = ["у", "ү", "о", "ө"]
+
+		order = ["у", "ы", "о", "а", "и", "ү", "е", "ө"]
+		replaces = ["u", "ɯ", "o", "a", "i", "y", "e", "œ"]
 
 
 	rdVowLineType = "dashed" # 'dashdot'
 
 
 def loadData(fns):
-	metadatas = []
+	metadatas = {}
 	for fn in fns:
 		if os.path.exists(fn):
 			with open(fn, 'r') as metadataFile:
 				fileContents = metadataFile.read()
-			metadatas.append(json.loads(fileContents))
+			metadatas[fn] = json.loads(fileContents)
 
 	return metadatas
 
 def filterData(metadatas, vow=None):
 	outdata = []
 	seriescount=0
-	for metadata in metadatas:
+	for fn in metadatas:
+		metadata = metadatas[fn]
 		if vow is not None:
 			if 'meta' not in metadata:
 				print("WARNING: no metadata")
@@ -107,11 +132,14 @@ def filterData(metadatas, vow=None):
 			else:
 				vowel = metadata['meta']['vowel']
 				xycount = 0
-				for point in metadata['trace']['points']:
-					toAppend = [seriescount, xycount, vowel, point[0], point[1]]
-					outdata.append(toAppend)
-					xycount+=1
-				seriescount+=1
+				if 'trace' in metadata:
+					for point in metadata['trace']['points']:
+						toAppend = [seriescount, xycount, vowel, point[0], point[1]]
+						outdata.append(toAppend)
+						xycount+=1
+					seriescount+=1
+				else:
+					print("WARNING: no trace data ({})".format(fn))
 
 	return outdata
 
@@ -243,16 +271,7 @@ def plotAvgs(outs):
 			print("WARNING: No x and/or y for {}: {}".format(vowel, outs['avgs'][vowel]))
 
 
-if __name__ == "__main__":
-
-	# initialisation: argument parsing
-	parser = argparse.ArgumentParser(description="Dumps target words and slide numbers from a slides file")
-	parser.add_argument("--lang", "-l", help="language we're dealing with", default="kaz")
-	parser.add_argument("--points", "-p", help="output graph with all radian intersection points", default=False, action="store_true")
-	parser.add_argument('files', nargs='+', help="files to read traces from, e.g. *.measurement")
-
-	args = parser.parse_args()
-
+def main(args):
 	setGlobals(args.lang)
 
 
@@ -308,12 +327,25 @@ if __name__ == "__main__":
 		idx = order.index(hl[1])
 		handles2[idx] = hl[0]
 		labels2[idx] = replaces[idx]
-	plt.legend(handles2, labels2, loc=2)
+	plt.legend(handles2, labels2, loc=4, ncol=2)
 
 
 	axis.invert_yaxis()
 	axis.set_aspect('equal')
+	plt.tight_layout()
 	for thisFormat in ["pdf", "svg"]:
 		plt.savefig('graph_averages.{}'.format(thisFormat), format=thisFormat)
 	plt.close()
 
+
+if __name__ == "__main__":
+
+	# initialisation: argument parsing
+	parser = argparse.ArgumentParser(description="Dumps target words and slide numbers from a slides file")
+	parser.add_argument("--lang", "-l", help="language we're dealing with", default="kaz")
+	parser.add_argument("--points", "-p", help="output graph with all radian intersection points", default=False, action="store_true")
+	parser.add_argument('files', nargs='+', help="files to read traces from, e.g. *.measurement")
+
+	args = parser.parse_args()
+
+	main(args)
