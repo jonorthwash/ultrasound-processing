@@ -472,25 +472,30 @@ def main(args):
 			#for element in itertools.product(backDegrees[backDegrees["degrees"] == degree]['distance'], frontDegrees[frontDegrees["degrees"] == degree]['distance']):
 			#	print(element)
 			# JNW: FIX BELOW!  find how to get diff of product
-			thisDist = itertools.product(backDegrees[backDegrees["degrees"] == degree]['distance'], frontDegrees[frontDegrees["degrees"] == degree]['distance'])
-			#print("====", degree, [x for x in thisDist])
-			#print([x for x in thisDist])
-			#thisDiffs = set(map(sub, thisDist))
-			#print([x[0] - x[1] for x in (thisDist)])
-			thisDiffs = [x[0] - x[1] for x in (thisDist)]
-			#print(thisDiffs)
-			(thisStd, thisMean) = (np.std(thisDiffs), np.mean(thisDiffs))
-			#print("====", degree, thisDiffs)
-			#outMeans.append({"degrees": degree, "mean": thisMean, "sminus": thisMean-thisStd, "splus": thisMean+thisStd}, ignore_index=True)
-			#print(thisMean, thisStd)
-			#outMeans.ix[degree] = {"mean": thisMean, "σminus": thisMean-thisStd, "σplus": thisMean+thisStd} #, "stddev": thisStd}
-			outMeans.ix[degree] = {"mean": thisMean, "σminus": thisMean-thisStd, "σplus": thisMean+thisStd, "stddevs": thisMean/thisStd, "stddev": thisStd}
-			#for tup in thisDist:
-			#	print("tuple:", tup)
-			#	print("difference:", tup[0] - tup[1])
-			#thisDiffs = np.subtract(np.array(thisDist))
-			#thisDiff = thisDist[0] - thisDist[1]
-			#print(thisDiffs)
+			lenBackDegs = len(backDegrees[backDegrees["degrees"] == degree]['distance'].dropna())
+			lenFrontDegs = len(frontDegrees[frontDegrees["degrees"] == degree]['distance'].dropna())
+			if lenBackDegs > 2 and lenFrontDegs > 2:
+				thisDist = itertools.product(backDegrees[backDegrees["degrees"] == degree]['distance'], frontDegrees[frontDegrees["degrees"] == degree]['distance'])
+				#print("====", degree, [x for x in thisDist])
+				#print([x for x in thisDist])
+				#thisDiffs = set(map(sub, thisDist))
+				#print([x[0] - x[1] for x in (thisDist)])
+				thisDiffs = [x[0] - x[1] for x in (thisDist)]
+				#print(thisDiffs)
+				(thisStd, thisMean) = (np.std(thisDiffs), np.mean(thisDiffs))
+				#print("====", degree, thisDiffs)
+				#outMeans.append({"degrees": degree, "mean": thisMean, "sminus": thisMean-thisStd, "splus": thisMean+thisStd}, ignore_index=True)
+				#print(thisMean, thisStd)
+				#outMeans.ix[degree] = {"mean": thisMean, "σminus": thisMean-thisStd, "σplus": thisMean+thisStd} #, "stddev": thisStd}
+				outMeans.ix[degree] = {"mean": thisMean, "σminus": thisMean-thisStd, "σplus": thisMean+thisStd, "stddevs": thisMean/thisStd, "stddev": thisStd}
+				#for tup in thisDist:
+				#	print("tuple:", tup)
+				#	print("difference:", tup[0] - tup[1])
+				#thisDiffs = np.subtract(np.array(thisDist))
+				#thisDiff = thisDist[0] - thisDist[1]
+				#print(thisDiffs)
+			else:
+				print(degree, lenBackDegs, lenFrontDegs)
 		print(outMeans)
 
 		last = None
@@ -527,7 +532,7 @@ def main(args):
 		#ax2.set_yticks(ax1, ax2)
 		ax1ylim = ax1.get_ylim()
 		ax2.set_ylim(ax1ylim[0]/10, ax1ylim[1]/10)
-		print(ax1ylim)
+		#print(ax1ylim)
 		#print(ax1yticks[0], ax1yticks[:-1])
 
 		ax2.tick_params(axis='y', colors='red')
@@ -547,12 +552,12 @@ def main(args):
 		lineStds, = ax2.plot(outMeans['stddevs'], color='red', zorder=5, alpha=0.5)
 		ax2.set_yticks(np.linspace(ax2.get_yticks()[0],ax2.get_yticks()[-1],len(ax1.get_yticks())))
 		#ax2.set_ylabel('standard deviations of mean from 0', color='red')
-		ax2.set_ylabel('standard deviations of mean from 0', color='red')
+		ax2.set_ylabel('standard deviations of mean from 0')#, color='red')
 		#fig = ax1.get_figure()
 		rectRange = Rectangle((0, 0), 1, 1, facecolor=plt.getp(lineRange, 'facecolor')[0])
 		#plt.legend([lineMean, rectRange, lineStds, lineExtreme], ["mean diff", "1 standard deviation", "№ stddev from mean", "№ stddev extremes"], loc=3)
 		ax1.legend([lineMean, rectRange], ["mean diff", "±1σ"], loc=3)
-		ax2.legend([lineStds, lineExtreme], ["№  of mean", "max Z-score"], loc=1)
+		ax2.legend([lineStds, lineExtreme], ["mean diff Z-score", "max/min Z-scores"], loc=1)
 		for thisFormat in ["pdf", "svg"]:
 			plt.savefig('graph_differences.{}'.format(thisFormat), format=thisFormat)
 		print(np.mean(zeroIntersect), maxStdsIntersect, minStdsIntersect)
