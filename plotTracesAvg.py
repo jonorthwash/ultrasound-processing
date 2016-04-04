@@ -64,6 +64,8 @@ def setGlobals(lang, code):
 		origin = (244,597) # P10
 	elif code=="P11":
 		origin = (245,601) # P11
+	elif code=="P12":
+		origin = (243,601) # P11
 
 
 
