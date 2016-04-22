@@ -362,7 +362,7 @@ def plotAvgs(outs):
 	for vowel in outs['avgs']:
 		if 'x' in outs['avgs'][vowel] and 'y' in outs['avgs'][vowel]:
 			ls = rdVowLineType if vowel in roundedVs else 'solid'
-			plt.plot(outs['avgs'][vowel]['x'], outs['avgs'][vowel]['y'], color=vowColors[vowel], label=vowel, ls=ls)
+			plt.plot(outs['avgs'][vowel]['x'], outs['avgs'][vowel]['y'], color=vowColors[vowel], label=vowel, ls=ls, lw=1)
 
 			xys = np.array(list(zip(outs['mins'][vowel]['x'], outs['mins'][vowel]['y']))+list(reversed(list(zip(outs['maxes'][vowel]['x'], outs['maxes'][vowel]['y'])))))
 			xysNoNaN = xys[~np.isnan(xys).any(1)]
