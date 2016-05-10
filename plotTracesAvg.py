@@ -545,6 +545,11 @@ def main(args):
 		minStds = outMeans['stddevs'].min()
 		minStdsIntersect = outMeans['stddevs'].idxmin()
 		#print(maxStds, minStds)
+		if args.forceMax is not None:
+			maxStdsIntersect = args.forceMax
+		if args.forceMin is not None:
+			minStdsIntersect = args.forceMin
+
 		if maxStds >= 0:
 			lineExtreme = ax2.axvline(maxStdsIntersect, zorder=6, color='red', linewidth=0.5)
 		if minStds <= 0:
@@ -606,6 +611,9 @@ if __name__ == "__main__":
 	parser.add_argument('files', nargs='+', help="files to read traces from, e.g. *.measurement")
 	parser.add_argument("--filterby", "-f", help="limit to only certain vowels, separated by commas", default=None)
 	parser.add_argument("--resolution", "-r", help="number of degrees to interpolate by", default=2, type=int)
+
+	parser.add_argument("--forceMax", "--max", help="force max intersection", default=None, type=int)
+	parser.add_argument("--forceMin", "--min", help="force min intersection", default=None, type=int)
 
 	args = parser.parse_args()
 
